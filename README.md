@@ -1,5 +1,4 @@
 # 🚦 Traffic Sign Spatial Recognition & XAI
-
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
@@ -8,44 +7,49 @@
 ![Jupyter](https://img.shields.io/badge/Jupyter-%23F37626.svg?style=for-the-badge&logo=Jupyter&logoColor=white)
 > **Comparative analysis of spatial invariance in Neural Networks and Explainable AI (XAI) for Autonomous Driving perception systems.**
 
-This project explores the limitations of **Dense Networks (MLP)** versus **Convolutional Networks (CNN)** in the context of **Spatial Invariance**. It implements an end-to-end pipeline for Traffic Sign Recognition (GTSRB) including custom dataset manipulation to test robustness, and utilizes **Grad-CAM** to audit model decision-making processes, ensuring the system identifies semantic features (pictograms) rather than contextual noise.
+This project quantifies the impact of **Inductive Bias** in Computer Vision architectures. It explores the catastrophic failure of **Dense Networks (MLP)** regarding **Spatial Invariance** compared to Convolutional Networks (CNN). The pipeline includes a custom "Shifted Dataset" generation to stress-test the models and utilizes **Grad-CAM** to audit the decision-making process, ensuring the model focuses on semantic features (pictograms) rather than contextual noise.
 
 ---
 
 ## 📸 Visualization & Interpretability
 
-**"Peeking inside the Black Box"**: Understanding where the model looks to make a decision.
+**"Peeking inside the Black Box"**: Visualizing feature extraction and decision boundaries.
 
-<br>Model focusing on the truck pictogram. | **Feature Extraction**<br>
+| **Explainability (Grad-CAM)** | **Feature Extraction** | **Robustness Failure** |
+| --- | --- | --- |
+|  |  |  |
+| Model validates the decision by<br>
 
-<br>Layer 1 filters detecting edges/colors. | **Robustness Failure**<br>
+<br>focusing on the truck pictogram. | Layer 1 kernels learning<br>
 
-<br>MLP failing on shifted data (Low Acc). |
+<br>edge and color detectors. | MLP failing (~24% Acc) when<br>
+
+<br>spatial topology is disrupted. |
 
 ---
 
 ## 💡 Project Overview
 
-In **Autonomous Driving**, a classifier must recognize a stop sign whether it's in the center of the frame or shifted to the side. This project proves empirically why **Inductive Bias** in CNNs is non-negotiable for computer vision.
+In **Autonomous Driving**, a perception system must be robust against camera vibrations or misalignment. A stop sign is a stop sign, regardless of its position in the frame. This project empirically proves why the lack of spatial invariance in MLPs makes them unsuitable for raw pixel processing.
 
-**Key Capabilities:**
+**Key Technical Capabilities:**
 
-* **🛡️ Robustness Auditing:** Creation of a custom "Shifted Dataset" (`ds2`) to rigorously test positional invariance.
-* **📊 Architecture Benchmarking:** Direct comparison between MLP, FCNN, and CNN architectures under stress conditions.
-* **🧠 Explainable AI (XAI):** Implementation of Gradient-weighted Class Activation Mapping (Grad-CAM) to visualize saliency maps.
-* **🔄 Data Augmentation:** Pipelines to improve generalization using affine transformations.
+* **🛡️ Robustness Auditing:** Implementation of a custom data pipeline to create `ds2` (Shifted Dataset), rigorously testing translational invariance.
+* **📊 Architecture Benchmarking:** A/B testing between MLP (Flattened input) and CNN (Spatial input) under stress conditions.
+* **🧠 Explainable AI (XAI):** Integration of `pytorch-grad-cam` to generate Saliency Maps, verifying that the model learns the object's semantics and not background bias.
+* **🔄 Data Augmentation Pipeline:** Using affine transformations to improve generalization on the validation set.
 
 ---
 
 ## 🏗️ System Architecture
 
-The pipeline moves from raw data processing to interpretability, highlighting the "Stress Test" branch.
+The pipeline demonstrates the complete lifecycle from raw tensor processing to model auditing.
 
 ```mermaid
 graph LR
     A[GTSRB Dataset] --> B{Data Pipeline}
-    B -->|Original| C[Standard Training]
-    B -->|Spatial Shift| D[Stress Test (DS2)]
+    B -->|Original Tensor| C[Standard Training]
+    B -->|Spatial Shift Transform| D[Stress Test (DS2)]
     
     subgraph Model Architectures
     C --> E[MLP Baseline]
@@ -55,10 +59,10 @@ graph LR
     end
     
     F --> G[Inference]
-    G --> H[Performance Analysis]
+    G --> H[Performance Metrics]
     G --> I[Grad-CAM XAI]
     
-    H --> J((Final Report))
+    H --> J((Final Technical Report))
     I --> J
 
 ```
@@ -67,29 +71,27 @@ graph LR
 
 ## 🧪 Experiments & Results
 
-The core experiment involved training models on centered data and testing them on spatially shifted data to measure **Generalization capability**.
+The core experiment involved training models on centered data and testing them on spatially shifted data to measure **Generalization Capability**.
 
 ### 1. The "Shift" Hypothesis
 
-We created a synthetic dataset (`ds2`) where traffic signs were randomly translated within the 32x32 canvas to simulate camera misalignment or vehicle movement.
+We tested the hypothesis that **Dense Networks** overfit to specific pixel coordinates. A synthetic dataset (`ds2`) was created where traffic signs were randomly translated within the 32x32 canvas.
 
 ### 2. Quantitative Results
 
-| Model Architecture | Inductive Bias | Test Accuracy (Shifted Data) | Conclusion |
+| Model Architecture | Inductive Bias | Test Accuracy (Shifted Data) | Technical Conclusion |
 | --- | --- | --- | --- |
-| **MLP (Dense)** | None | **~24.2%** ❌ | Failed. Treats shifted pixels as new features. |
-| **FCNN / CNN** | Spatial | **~83.5%** ✅ | Success. Kernels detect features anywhere. |
+| **MLP (Dense)** | None | **~24.2%** ❌ | **Catastrophic Failure.** Flattening the input destroys spatial topology; the model treats shifted pixels as entirely new features. |
+| **FCNN / CNN** | Spatial | **~83.5%** ✅ | **Robust.** Convolutional kernels share weights across the input, effectively detecting features regardless of position. |
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Core Frameworks
-
-* **Deep Learning:** PyTorch (`torch`, `torchvision`).
-* **Data Processing:** NumPy, Pandas.
-* **Visualization:** Matplotlib, Seaborn, IPyWidgets (for interactive sliders).
-* **Interpretability:** `pytorch-grad-cam`.
+* **Deep Learning Framework:** PyTorch (`torch`, `torchvision`, `nn.Module`).
+* **Data Manipulation:** NumPy (tensor operations), Pandas (logging).
+* **Visualization:** Matplotlib, Seaborn, IPyWidgets (interactive analysis).
+* **Interpretability:** `pytorch-grad-cam` (Gradient-weighted Class Activation Mapping).
 
 ---
 
@@ -114,19 +116,35 @@ pip install torch torchvision matplotlib pandas scikit-learn pytorch-grad-cam op
 
 The project is structured in sequential notebooks for reproducibility:
 
-1. **`01_Dataset_Prep.ipynb`**: Data downloading and "Shifted Dataset" creation.
-2. **`02_MLP_Baseline.ipynb`**: Training the Dense Network and observing the failure case.
-3. **`03_CNN_Architecture.ipynb`**: Implementing and training the robust CNN/FCNN.
-4. **`04_XAI_Visualization.ipynb`**: Running Grad-CAM and filter visualization.
+1. **`01_Dataset_Prep.ipynb`**: Data downloading, preprocessing, and "Shifted Dataset" creation.
+2. **`02_MLP_Baseline.ipynb`**: Training the Dense Network and analyzing the high error rate on `ds2`.
+3. **`03_CNN_Architecture.ipynb`**: Implementing the robust CNN/FCNN architecture and comparing metrics.
+4. **`04_XAI_Visualization.ipynb`**: Running Grad-CAM and filter visualization hooks.
 
 ---
 
+## 📂 Project Structure
+
+```text
+.
+├── metrics/                # CSV logs for Loss/Accuracy curves
+│   ├── train_loss_cnn.csv
+│   └── test_acc_mlp.csv
+├── models/                 # Saved .pth state dictionaries (Inference ready)
+├── notebooks/              # Jupyter Notebooks (Source Code)
+├── src/                    # Python helper modules
+├── assets/                 # Images for README
+└── README.md
+
+```
+
+---
 
 ## 👨‍💻 Author
 
 **Hugo Salvador Aizpún**
 
 *Degree in Artificial Intelligence*
-*Focus: Machine Learning II*
+*Focus: Computer Vision & Deep Learning*
 
 [GitHub Profile](https://www.google.com/search?q=https://github.com/Hugo31810)
