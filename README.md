@@ -125,6 +125,7 @@ The project is structured in sequential notebooks for reproducibility:
 **Hugo Salvador Aizpún**
 
 *Degree in Artificial Intelligence*
-*Focus: Computer Vision & Deep Learning*
+
+*Focus: Machine Learnign II*
 
 [GitHub Profile](https://www.google.com/search?q=https://github.com/Hugo31810)
